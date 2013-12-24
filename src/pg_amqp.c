@@ -291,13 +291,18 @@ pg_amqp_publish_opt(PG_FUNCTION_ARGS, int channel) {
       amqp_bytes_t routing_key_b = amqp_cstring_bytes("");
       amqp_bytes_t body_b = amqp_cstring_bytes("");
 
+      amqp_basic_properties_t props;
+
       set_bytes_from_text(exchange_b,1);
       set_bytes_from_text(routing_key_b,2);
       set_bytes_from_text(body_b,3);
-      
-      amqp_basic_properties_t props;
+
+      /* set content-type to json so celery likes us */
       props._flags = AMQP_BASIC_CONTENT_TYPE_FLAG;
       props.content_type = amqp_cstring_bytes("application/json");
+      /* force 'persistent' delivery so that this msg survives a rabbitmq crash */
+      props.delivery_mode = 2;
+      props._flags |= AMQP_BASIC_DELIVERY_MODE_FLAG;
 
       rv = amqp_basic_publish(bs->conn, channel, exchange_b, routing_key_b,
                               mandatory, immediate, &props, body_b);
