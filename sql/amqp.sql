@@ -52,4 +52,8 @@ create table amqp.broker (
   primary key(broker_id, host, port)
 );
 
+-- allow pg_dump 
+-- (cf. https://www.postgresql.org/docs/current/static/extend-extensions.html)
+select pg_catalog.pg_extension_config_dump('amqp.broker', '');
+
 COMMIT;
